@@ -1,12 +1,20 @@
 import enum
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Float
+from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
 from database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
 
 class RoleEnum(str, enum.Enum):
     TEACHER = "TEACHER"
     STUDENT = "STUDENT"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -18,6 +26,7 @@ class User(Base):
 
     grades = relationship("Grade", back_populates="student")
 
+
 class Subject(Base):
     __tablename__ = "subjects"
 
@@ -26,6 +35,7 @@ class Subject(Base):
 
     grades = relationship("Grade", back_populates="subject")
 
+
 class Grade(Base):
     __tablename__ = "grades"
 
@@ -33,7 +43,7 @@ class Grade(Base):
     value = Column(Float, nullable=False)
     student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
 
     student = relationship("User", back_populates="grades")
     subject = relationship("Subject", back_populates="grades")
